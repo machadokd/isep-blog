@@ -4,7 +4,7 @@ use App\Http\Controllers\Canvas\CanvasUiController;
 use Canvas\Http\Middleware\Session;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('canvas-ui')->middleware(['web'])->group(function (): void {
+Route::middleware(['web'])->group(function (): void {
     Route::get('/', [CanvasUiController::class, 'index'])->name('canvas-ui.index');
     Route::get('/feed', [CanvasUiController::class, 'feed'])->name('canvas-ui.feed');
     Route::get('/tags', [CanvasUiController::class, 'tags'])->name('canvas-ui.tags');
