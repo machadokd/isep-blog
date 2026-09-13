@@ -1,0 +1,201 @@
+<?php
+
+namespace App\Http\Controllers\Canvas;
+
+use Canvas\Events\PostViewed;
+use Canvas\Models\CanvasUser;
+use Canvas\Models\Post;
+use Canvas\Models\Tag;
+use Canvas\Models\Topic;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Collection;
+
+class CanvasUiController extends Controller
+{
+    public function index(): View
+    {
+        $posts = Post::published()
+            ->with(['user', 'topic'])
+            ->latest()
+            ->paginate();
+
+        $this->attachCanvasUsersToPosts($posts);
+
+        return view('canvas::ui.index', compact('posts'));
+    }
+
+    public function feed(): Response
+    {
+        $posts = Post::published()
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        $channelTitle = config('app.name');
+        $channelLink = route('canvas-ui.index');
+        $channelDescription = 'Posts from '.$channelTitle.'.';
+        $channelLanguage = str_replace('_', '-', app()->getLocale());
+
+        return response()
+            ->view('canvas::ui.feed', compact(
+                'posts',
+                'channelTitle',
+                'channelLink',
+                'channelDescription',
+                'channelLanguage',
+            ))
+            ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+    }
+
+    public function show(string $slug): View
+    {
+        $post = Post::published()
+            ->with(['user', 'tags', 'topic'])
+            ->firstWhere('slug', $slug);
+
+        if (! $post) {
+            abort(404);
+        }
+
+        $this->attachCanvasUsersToPosts(collect([$post]));
+
+        event(new PostViewed(
+            post: $post,
+            ip: request()->ip(),
+            agent: request()->userAgent(),
+            referer: request()->header('referer'),
+        ));
+
+        return view('canvas::ui.show', compact('post'));
+    }
+
+    public function author(string $username): View
+    {
+        $canvasUser = CanvasUser::query()
+            ->where('username', $username)
+            ->first();
+
+        if ($canvasUser === null) {
+            abort(404);
+        }
+
+        /** @var class-string<Model> $userModel */
+        $userModel = config('canvas.user_model');
+
+        $user = $userModel::query()->find($canvasUser->user_id);
+
+        if ($user === null) {
+            abort(404);
+        }
+
+        $user->setRelation('canvasUser', $canvasUser);
+
+        $posts = Post::query()
+            ->where('user_id', $canvasUser->user_id)
+            ->published()
+            ->with('topic')
+            ->latest()
+            ->paginate();
+
+        return view('canvas::ui.author', compact('user', 'posts'));
+    }
+
+    public function tags(): View
+    {
+        $tags = Tag::query()
+            ->withCount(['posts' => fn ($query) => $query->published()])
+            ->orderBy('name')
+            ->paginate();
+
+        return view('canvas::ui.tags', compact('tags'));
+    }
+
+    public function tag(string $slug): View
+    {
+        $tag = Tag::firstWhere('slug', $slug);
+
+        if (! $tag) {
+            abort(404);
+        }
+
+        $posts = $tag->posts()
+            ->published()
+            ->with(['user', 'topic'])
+            ->latest()
+            ->paginate();
+
+        $this->attachCanvasUsersToPosts($posts);
+
+        return view('canvas::ui.tag', compact('tag', 'posts'));
+    }
+
+    public function topics(): View
+    {
+        $topics = Topic::query()
+            ->withCount(['posts' => fn ($query) => $query->published()])
+            ->orderBy('name')
+            ->paginate();
+
+        return view('canvas::ui.topics', compact('topics'));
+    }
+
+    public function topic(string $slug): View
+    {
+        $topic = Topic::firstWhere('slug', $slug);
+
+        if (! $topic) {
+            abort(404);
+        }
+
+        $posts = $topic->posts()
+            ->published()
+            ->with(['user', 'tags'])
+            ->latest()
+            ->paginate();
+
+        $this->attachCanvasUsersToPosts($posts);
+
+        return view('canvas::ui.topic', compact('topic', 'posts'));
+    }
+
+    private function attachCanvasUsersToPosts(Paginator|Collection $posts): void
+    {
+        /** @var Collection<int, Post> $items */
+        $items = $posts instanceof Paginator
+            ? collect($posts->items())
+            : collect($posts);
+
+        $userIds = $items
+            ->pluck('user_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($userIds->isEmpty()) {
+            return;
+        }
+
+        $canvasUsers = CanvasUser::query()
+            ->whereIn('user_id', $userIds)
+            ->get()
+            ->keyBy('user_id');
+
+        $items->each(function (Post $post) use ($canvasUsers): void {
+            $user = $post->user;
+
+            if ($user === null) {
+                return;
+            }
+
+            $canvasUser = $canvasUsers->get($post->user_id);
+
+            if ($canvasUser !== null) {
+                $user->setRelation('canvasUser', $canvasUser);
+            }
+        });
+    }
+}
