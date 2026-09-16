@@ -34,7 +34,7 @@
     <header class="border-b border-gray-100 py-4 mb-8">
         <div class="max-w-3xl mx-auto px-4 flex items-center justify-between">
             <a href="{{ route('canvas-ui.index') }}" class="font-semibold text-lg tracking-tight">
-                {{ config('app.name') }}
+                FinLogic
             </a>
             <nav class="flex items-center gap-4 text-sm text-gray-500">
                 <a href="{{ route('canvas-ui.tags') }}" class="hover:text-gray-700">Tags</a>
@@ -49,9 +49,7 @@
 
     <footer class="border-t border-gray-100 py-6 mt-8">
         <div class="max-w-3xl mx-auto px-4 flex items-center justify-center gap-4 text-sm text-gray-400">
-            <a href="{{ route('canvas-ui.feed') }}" class="hover:text-gray-600 hover:underline">RSS</a>
-            <span aria-hidden="true">&middot;</span>
-            <span>Powered by <a href="https://trycanvas.app" class="hover:underline">Canvas</a></span>
+            <span>Powered by FinLogic</span>
         </div>
     </footer>
 </body>
