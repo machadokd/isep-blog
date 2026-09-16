@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name'))</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/faveicon.png') }}">
     <link rel="alternate" type="application/rss+xml" title="{{ config('app.name') }}" href="{{ route('canvas-ui.feed') }}">
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
@@ -33,8 +34,8 @@
 <body class="bg-white text-gray-900 antialiased font-sans">
     <header class="border-b border-gray-100 py-4 mb-8">
         <div class="max-w-3xl mx-auto px-4 flex items-center justify-between">
-            <a href="{{ route('canvas-ui.index') }}" class="font-semibold text-lg tracking-tight">
-                FinLogic
+            <a href="{{ route('canvas-ui.index') }}" class="flex items-center">
+                <img src="{{ asset('images/finlogic_wout_bg.png') }}" alt="FinLogic" class="h-9 w-auto">
             </a>
             <nav class="flex items-center gap-4 text-sm text-gray-500">
                 <a href="{{ route('canvas-ui.tags') }}" class="hover:text-gray-700">Tags</a>
