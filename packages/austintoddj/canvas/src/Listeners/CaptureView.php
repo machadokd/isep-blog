@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Canvas\Listeners;
+
+use Canvas\Events\PostViewed;
+use Canvas\Models\Post;
+use Canvas\Support\BotDetector;
+use Canvas\Support\Referer;
+
+class CaptureView
+{
+    /**
+     * A view is captured when a user loads a post for the first time in a given
+     * hour. The ID of the post is stored in session to be validated against
+     * until it "expires" and is pruned by the Session middleware class.
+     */
+    public function handle(PostViewed $event): void
+    {
+        if (BotDetector::isBot($event->agent)) {
+            return;
+        }
+
+        if (! $this->wasRecentlyViewed($event->post)) {
+            $data = [
+                'post_id' => $event->post->id,
+                'ip' => $event->ip,
+                'agent' => $event->agent,
+                'referer' => Referer::host($event->referer),
+            ];
+
+            $event->post->views()->create($data);
+
+            $this->storeInSession($event->post);
+        }
+    }
+
+    private function wasRecentlyViewed(Post $post): bool
+    {
+        $viewed = session()->get('viewed_posts', []);
+
+        return array_key_exists($post->id, $viewed);
+    }
+
+    private function storeInSession(Post $post): void
+    {
+        session()->put("viewed_posts.{$post->id}", now()->timestamp);
+    }
+}

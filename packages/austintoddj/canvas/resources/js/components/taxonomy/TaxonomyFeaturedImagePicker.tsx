@@ -1,0 +1,79 @@
+import { useState } from 'react';
+
+import ImageSourcePicker from '@/components/media/ImageSourcePicker';
+import { Button } from '@/components/button';
+import { Fieldset } from '@/components/fieldset';
+import { Text } from '@/components/text';
+import { useCanvas } from '@/hooks/useCanvas';
+import type { TaxonomyFormState } from '@/lib/taxonomy/form';
+import { IconPhoto } from '@tabler/icons-react';
+
+type TaxonomyFeaturedImagePickerProps = {
+    form: TaxonomyFormState;
+    onChange: (form: TaxonomyFormState) => void;
+    disabled?: boolean;
+};
+
+export default function TaxonomyFeaturedImagePicker({
+    form,
+    onChange,
+    disabled = false,
+}: TaxonomyFeaturedImagePickerProps) {
+    const { t } = useCanvas();
+    const [pickerOpen, setPickerOpen] = useState(false);
+
+    function selectImage(url: string, caption?: string | null) {
+        onChange({
+            ...form,
+            featuredImage: url,
+            featuredImageCaption: caption !== undefined && caption !== null ? caption : form.featuredImageCaption,
+        });
+        setPickerOpen(false);
+    }
+
+    function removeImage() {
+        onChange({
+            ...form,
+            featuredImage: null,
+            featuredImageCaption: null,
+        });
+    }
+
+    return (
+        <Fieldset className="space-y-4">
+            {form.featuredImage ? (
+                <div className="min-w-0 overflow-hidden rounded-lg border border-zinc-950/10 dark:border-white/10 dark:ring-1 dark:ring-white/5">
+                    <img
+                        src={form.featuredImage}
+                        alt={form.featuredImageCaption ?? t('editor.featured_image')}
+                        className="aspect-[1.91/1] w-full max-w-full object-cover"
+                    />
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-950/10 bg-zinc-950/[0.01] px-4 py-8 text-center dark:border-white/10 dark:bg-white/[0.02]">
+                    <IconPhoto className="size-8 text-zinc-400 dark:text-zinc-500" />
+                    <Text className="mt-2 text-sm text-canvas-muted dark:text-canvas-muted-dark">
+                        {t('editor.no_featured_image')}
+                    </Text>
+                </div>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+                <Button type="button" outline disabled={disabled} onClick={() => setPickerOpen(true)}>
+                    {form.featuredImage ? t('editor.change_image') : t('editor.choose_image')}
+                </Button>
+                {form.featuredImage ? (
+                    <Button type="button" plain disabled={disabled} onClick={removeImage}>
+                        {t('editor.remove')}
+                    </Button>
+                ) : null}
+            </div>
+
+            <ImageSourcePicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onSelect={(selection) => selectImage(selection.url, selection.caption)}
+            />
+        </Fieldset>
+    );
+}

@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Canvas\Http\Controllers;
+
+use Canvas\Http\Requests\TagRequest;
+use Canvas\Models\Tag;
+use Canvas\Support\TaxonomyIndexQuery;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
+
+class TagController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $query = Tag::query()
+            ->select('id', 'name', 'created_at')
+            ->withCount('posts');
+
+        TaxonomyIndexQuery::apply($query, $request);
+
+        return response()->json($query->paginate(), 200);
+    }
+
+    public function create(): JsonResponse
+    {
+        return response()->json(Tag::query()->make([
+            'id' => (string) Str::uuid(),
+        ]), 200);
+    }
+
+    public function store(TagRequest $request, string $id): JsonResponse
+    {
+        $data = $request->validated();
+        $user = $request->user(config('canvas.guard'));
+
+        $tag = Tag::query()->find($id);
+        $created = $tag === null;
+
+        if (! $tag) {
+            if ($tag = Tag::onlyTrashed()->firstWhere('slug', $data['slug'])) {
+                $tag->restore();
+                $tag->fill($data);
+                $tag->save();
+
+                return response()->json($tag->refresh(), 201);
+            }
+
+            $tag = new Tag(['id' => $id]);
+        }
+
+        $tag->fill($data);
+        $tag->user_id = $tag->user_id ?? $user->id;
+        $tag->save();
+
+        return response()->json($tag->refresh(), $created ? 201 : 200);
+    }
+
+    public function show(Tag $tag): JsonResponse
+    {
+        return response()->json($tag, 200);
+    }
+
+    public function posts(Tag $tag): JsonResponse
+    {
+        return response()->json($tag->posts()->withCount('views')->paginate(), 200);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function destroy(Tag $tag): JsonResponse
+    {
+        $tag->delete();
+
+        return response()->json(null, 204);
+    }
+}
