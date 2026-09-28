@@ -11,6 +11,9 @@ cd "$APP_DIR"
 echo "==> A atualizar o código..."
 sudo -u www-data git pull
 
+echo "==> A repor permissões para instalar dependências..."
+sudo chown -R "$(whoami)":"$(whoami)" "$APP_DIR"
+
 echo "==> A instalar dependências..."
 composer install --no-dev --optimize-autoloader
 npm install
