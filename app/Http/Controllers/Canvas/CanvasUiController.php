@@ -162,6 +162,11 @@ class CanvasUiController extends Controller
         return view('canvas::ui.topic', compact('topic', 'posts'));
     }
 
+    public function team(): View
+    {
+        return view('canvas::ui.team');
+    }
+
     private function attachCanvasUsersToPosts(Paginator|Collection $posts): void
     {
         /** @var Collection<int, Post> $items */

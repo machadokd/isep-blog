@@ -9,6 +9,7 @@ Route::middleware(['web'])->group(function (): void {
     Route::get('/feed', [CanvasUiController::class, 'feed'])->name('canvas-ui.feed');
     Route::get('/tags', [CanvasUiController::class, 'tags'])->name('canvas-ui.tags');
     Route::get('/topics', [CanvasUiController::class, 'topics'])->name('canvas-ui.topics');
+    Route::get('/equipa', [CanvasUiController::class, 'team'])->name('canvas-ui.team');
     Route::get('/tags/{slug}', [CanvasUiController::class, 'tag'])->name('canvas-ui.tag');
     Route::get('/topics/{slug}', [CanvasUiController::class, 'topic'])->name('canvas-ui.topic');
     Route::get('/@{username}', [CanvasUiController::class, 'author'])

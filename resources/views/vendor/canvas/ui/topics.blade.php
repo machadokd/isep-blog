@@ -1,11 +1,11 @@
 @extends('canvas::ui.layout')
 
-@section('title', 'Topics — ' . config('app.name'))
+@section('title', 'Desafios — ' . config('app.name'))
 
 @push('head')
     @include('canvas::ui.partials.meta', [
-        'title' => 'Topics',
-        'description' => 'Browse topics on '.config('app.name').'.',
+        'title' => 'Desafios',
+        'description' => 'Explora os desafios do '.config('app.name').'.',
         'url' => route('canvas-ui.topics'),
         'type' => 'website',
     ])
@@ -13,7 +13,7 @@
 
 @section('content')
     <header class="mb-10">
-        <h1 class="text-3xl font-bold">Topics</h1>
+        <h1 class="text-3xl font-bold">Desafios</h1>
     </header>
 
     <div class="space-y-3">
@@ -28,7 +28,7 @@
                 </span>
             </div>
         @empty
-            <p class="text-gray-500 text-center py-16">No topics yet.</p>
+            <p class="text-gray-500 text-center py-16">Ainda não há desafios.</p>
         @endforelse
     </div>
 

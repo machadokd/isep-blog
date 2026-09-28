@@ -5,7 +5,7 @@
 @push('head')
     @include('canvas::ui.partials.meta', [
         'title' => $topic->name,
-        'description' => 'Posts in '.$topic->name.'.',
+        'description' => 'Relatos e progresso do desafio '.$topic->name.'.',
         'url' => route('canvas-ui.topic', $topic->slug),
         'type' => 'website',
     ])
@@ -13,7 +13,7 @@
 
 @section('content')
     <header class="mb-10">
-        <p class="text-sm text-gray-500 mb-1">Topic</p>
+        <p class="text-sm text-gray-500 mb-1">Desafio</p>
         <h1 class="text-3xl font-bold">{{ $topic->name }}</h1>
     </header>
 
@@ -21,7 +21,7 @@
         @forelse ($posts as $post)
             @include('canvas::ui.partials.post-list-item', ['post' => $post, 'showAuthor' => true, 'showTags' => true])
         @empty
-            <p class="text-gray-500 text-center py-16">No posts in this topic yet.</p>
+            <p class="text-gray-500 text-center py-16">Ainda não há posts neste desafio.</p>
         @endforelse
     </div>
 
