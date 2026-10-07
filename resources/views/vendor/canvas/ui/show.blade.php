@@ -40,74 +40,91 @@
 @endpush
 
 @section('content')
-    <article>
-        <header class="mb-8">
-            @if ($post->topic)
-                <a href="{{ route('canvas-ui.topic', $post->topic->slug) }}"
-                   class="text-sm font-medium text-indigo-600 hover:underline">
-                    {{ $post->topic->name }}
-                </a>
-            @endif
-
-            <h1 class="text-4xl font-bold mt-2 mb-4 leading-tight">{{ $post->title }}</h1>
-
-            @if ($post->summary)
-                <p class="text-xl text-gray-500 leading-relaxed mb-4">{{ $post->summary }}</p>
-            @endif
-
-            <div class="flex items-center gap-3 text-sm text-gray-500">
-                @if ($post->user)
-                    @include('canvas::ui.partials.author', [
-                        'user' => $post->user,
-                        'size' => 40,
-                        'imageClass' => 'w-8 h-8',
-                        'linkClass' => 'font-medium text-gray-700',
-                    ])
-                    <span>&middot;</span>
-                @endif
-                <time datetime="{{ $post->published_at->toDateString() }}">
-                    {{ $post->published_at->format('M j, Y') }}
-                </time>
-                <span>&middot;</span>
-                <span>{{ $post->read_time }}</span>
-            </div>
-        </header>
-
-        @if ($post->featured_image)
-            <figure class="mb-8">
-                <img src="{{ $post->featured_image }}"
-                     alt="{{ $post->featured_image_caption ?? $post->title }}"
-                     class="w-full rounded-lg"
-                     decoding="async">
-                @if ($post->featured_image_caption)
-                    <figcaption class="text-sm text-center text-gray-400 mt-2">
-                        {{ $post->featured_image_caption }}
-                    </figcaption>
-                @endif
-            </figure>
+    <div class="mx-auto max-w-3xl">
+    <nav aria-label="Caminho" class="text-sm text-slate-500">
+        @if ($post->topic)
+            <a href="{{ route('canvas-ui.topic', $post->topic->slug) }}" class="hover:text-slate-900">&larr; {{ $post->topic->name }}</a>
+        @else
+            <a href="{{ route('canvas-ui.index') }}" class="hover:text-slate-900">&larr; Início</a>
         @endif
+    </nav>
 
-        <div class="canvas-post-body prose prose-lg max-w-none font-serif text-gray-800 prose-headings:font-sans prose-a:text-indigo-600 hover:prose-a:text-indigo-800">
-            {!! $post->body !!}
+    <header class="mt-6 border-b border-slate-200 pb-10">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h1 class="font-serif text-4xl font-semibold leading-tight tracking-tight text-brand-900 sm:text-5xl">{{ \App\Support\PostTitle::withoutChallenge($post->title, $post->topic?->name) }}</h1>
+            @if ($post->week_number && ! preg_match('/\bsemana\s+'.$post->week_number.'\b/iu', $post->title))
+                <span class="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">Semana {{ $post->week_number }}</span>
+            @endif
         </div>
-
-        @if ($post->tags->isNotEmpty())
-            <footer class="mt-10 pt-6 border-t border-gray-100">
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($post->tags as $tag)
-                        <a href="{{ route('canvas-ui.tag', $tag->slug) }}"
-                           class="inline-block px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200">
-                            {{ $tag->name }}
-                        </a>
-                    @endforeach
-                </div>
-            </footer>
-        @endif
-    </article>
+        <p class="mt-3 text-lg text-slate-600">
+            @if ($post->user)
+                Escrito por {{ $post->user->name }} a
+            @else
+                Publicado a
+            @endif
+            <time datetime="{{ $post->published_at->toDateString() }}">{{ $post->published_at->locale('pt')->translatedFormat('j \d\e F \d\e Y') }}</time>
+        </p>
+    </header>
 
     <div class="mt-12">
-        <a href="{{ route('canvas-ui.index') }}" class="text-sm text-gray-500 hover:text-gray-700">
-            &larr; All posts
-        </a>
+        <article>
+            @if ($post->featured_image)
+                <figure class="mb-10">
+                    <img src="{{ $post->featured_image }}"
+                         alt="{{ $post->featured_image_caption ?? $post->title }}"
+                         class="w-full rounded-2xl"
+                         decoding="async">
+                    @if ($post->featured_image_caption)
+                        <figcaption class="mt-2 text-center text-sm text-slate-500">
+                            {{ $post->featured_image_caption }}
+                        </figcaption>
+                    @endif
+                </figure>
+            @endif
+
+            @if ($post->summary)
+                <aside class="mb-10 rounded-2xl border border-brand-100 bg-brand-50 p-5">
+                    <p class="text-sm font-semibold text-brand-700">Resumo da semana</p>
+                    <p class="mt-1 leading-relaxed text-slate-700">{{ $post->summary }}</p>
+                </aside>
+            @endif
+
+            <div class="canvas-post-body prose prose-lg max-w-none font-serif prose-slate prose-headings:font-semibold prose-a:text-brand-600 hover:prose-a:text-brand-700">
+                {!! $post->body !!}
+            </div>
+
+            @if ($post->tags->isNotEmpty())
+                <footer class="mt-10 border-t border-slate-100 pt-6">
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($post->tags as $tag)
+                            <a href="{{ route('canvas-ui.tag', $tag->slug) }}"
+                               class="inline-block rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600 hover:bg-slate-200">
+                                {{ $tag->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </footer>
+            @endif
+
+            @if ($previousWeek || $nextWeek)
+                <nav aria-label="Semana anterior e seguinte" class="mt-12 grid gap-4 sm:grid-cols-2">
+                    @if ($previousWeek)
+                        <a href="{{ route('canvas-ui.show', $previousWeek->slug) }}"
+                           class="rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50">
+                            <span class="text-sm text-slate-500">&larr; Semana {{ $previousWeek->week_number }}</span>
+                            <span class="mt-1 block font-semibold text-slate-900">{{ \App\Support\PostTitle::withoutChallenge($previousWeek->title, $post->topic?->name) }}</span>
+                        </a>
+                    @endif
+                    @if ($nextWeek)
+                        <a href="{{ route('canvas-ui.show', $nextWeek->slug) }}"
+                           class="rounded-2xl border border-slate-200 p-5 text-right transition hover:border-slate-300 hover:bg-slate-50 sm:col-start-2">
+                            <span class="text-sm text-slate-500">Semana {{ $nextWeek->week_number }} &rarr;</span>
+                            <span class="mt-1 block font-semibold text-slate-900">{{ \App\Support\PostTitle::withoutChallenge($nextWeek->title, $post->topic?->name) }}</span>
+                        </a>
+                    @endif
+                </nav>
+            @endif
+        </article>
+    </div>
     </div>
 @endsection
