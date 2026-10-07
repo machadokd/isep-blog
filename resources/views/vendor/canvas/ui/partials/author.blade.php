@@ -25,13 +25,18 @@
                 $imageClass ?? 'w-6 h-6 text-[10px]',
             ]) aria-hidden="true">{{ $initials }}</span>
         @endif
-        @if ($canvasUser?->username)
-            <a href="{{ route('canvas-ui.author', $canvasUser->username) }}"
-               @class(['hover:underline', $linkClass ?? null])>
-                {{ $user->name }}
-            </a>
-        @else
-            <span @class($linkClass ?? null)>{{ $user->name }}</span>
-        @endif
+        <span class="flex flex-col leading-tight">
+            @if ($canvasUser?->username)
+                <a href="{{ route('canvas-ui.author', $canvasUser->username) }}"
+                   @class(['hover:underline', $linkClass ?? null])>
+                    {{ $user->name }}
+                </a>
+            @else
+                <span @class($linkClass ?? null)>{{ $user->name }}</span>
+            @endif
+            @isset($subtitle)
+                <span class="mt-0.5 text-slate-500">{{ $subtitle }}</span>
+            @endisset
+        </span>
     </div>
 @endif
