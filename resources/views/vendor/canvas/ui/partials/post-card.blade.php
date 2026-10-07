@@ -19,7 +19,7 @@
             <a href="{{ route('canvas-ui.show', $post->slug) }}" class="hover:text-brand-700">{{ \App\Support\PostTitle::withoutChallenge($post->title, $post->topic?->name) }}</a>
         </h3>
         @if ($post->summary || $post->body)
-            <p class="line-clamp-2 text-sm leading-relaxed text-slate-600">{{ $post->summary ?: str(html_entity_decode(strip_tags((string) $post->body)))->squish()->limit(200) }}</p>
+            <p class="line-clamp-2 text-sm leading-relaxed text-slate-600">{{ $post->summary ?: str(substr(html_entity_decode(strip_tags((string) $post->body)), 0, 1000))->squish()->limit(200) }}</p>
         @endif
         <div class="mt-auto pt-2">
             @include('canvas::ui.partials.post-meta', ['post' => $post])

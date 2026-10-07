@@ -4,7 +4,7 @@
         <a href="{{ route('canvas-ui.show', $post->slug) }}" class="hover:text-brand-700">{{ \App\Support\PostTitle::withoutChallenge($post->title, $post->topic?->name) }}</a>
     </h2>
     @if ($post->summary || $post->body)
-        <p class="mt-2 leading-relaxed text-slate-600">{{ $post->summary ?: str(html_entity_decode(strip_tags((string) $post->body)))->squish()->limit(200) }}</p>
+        <p class="mt-2 leading-relaxed text-slate-600">{{ $post->summary ?: str(substr(html_entity_decode(strip_tags((string) $post->body)), 0, 1000))->squish()->limit(200) }}</p>
     @endif
     <div class="mt-4">
         @include('canvas::ui.partials.post-meta', ['post' => $post])

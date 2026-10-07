@@ -149,7 +149,7 @@
                         <a href="{{ route('canvas-ui.show', $featuredPost->slug) }}" class="hover:text-brand-700">{{ \App\Support\PostTitle::withoutChallenge($featuredPost->title, $featuredPost->topic?->name) }}</a>
                     </h3>
                     @if ($featuredPost->summary || $featuredPost->body)
-                        <p class="text-lg leading-relaxed text-slate-600">{{ $featuredPost->summary ?: str(html_entity_decode(strip_tags((string) $featuredPost->body)))->squish()->limit(200) }}</p>
+                        <p class="text-lg leading-relaxed text-slate-600">{{ $featuredPost->summary ?: str(substr(html_entity_decode(strip_tags((string) $featuredPost->body)), 0, 1000))->squish()->limit(200) }}</p>
                     @endif
                     <div class="pt-2">
                         @include('canvas::ui.partials.post-meta', ['post' => $featuredPost])
